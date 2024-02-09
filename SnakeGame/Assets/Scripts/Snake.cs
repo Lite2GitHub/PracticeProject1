@@ -1,23 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Snake : MonoBehaviour
 {
     private Vector2 _direction = Vector2.right;
     //sets initial direction, this triggers initial movement due to movement being FixedUpdate;
 
-    private List<Transform> _segments;
+    private List<Transform> _segments = new List<Transform>();
     //Keeps track of segments in a list;
     //List needs using System.Collections.Generic to function;
 
     public Transform segmentPrefab;
     //tags prefab;
 
+    public int initialSize = 3;
+
     private void Start()
     {
-        _segments = new List<Transform>();
-        _segments.Add(this.transform);
+        ResetState();
         //adds segments when triggered?
     }
 
@@ -68,12 +71,33 @@ public class Snake : MonoBehaviour
         //adds segments;
     }
 
+    private void ResetState()
+    {
+        for (int i = 1; i < _segments.Count; i++)
+        {
+            Destroy(_segments[i].gameObject);
+        }
+
+        _segments.Clear();
+        _segments.Add(this.transform);
+
+        for (int i = 1; i < this.initialSize; i++)
+        {
+            _segments.Add(Instantiate(this.segmentPrefab));
+        }
+
+        this.transform.position = Vector3.zero;
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.tag == "Food")
         {
             Grow();
             Debug.Log("+1");
+        } else if (other.tag == "Obstacle")
+        {
+            ResetState();
         }
     }
 }
